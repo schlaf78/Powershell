@@ -1,0 +1,8 @@
+# Loop from 1 to 100
+for ($SizeGB = 1; $SizeGB -le 100; $SizeGB++) {
+    $TemplateName = "$SizeGB GB limit HARD QUOTA"  # Template name
+    $SizeBytes = $SizeGB * 1GB                    # Convert size from GB to bytes
+
+    # Create the quota template
+    New-FsrmQuotaTemplate -Name $TemplateName -Description "$TemplateName" -Size $SizeBytes #-SizeLimit $SizeBytes -GenerateNotifications $false
+}
