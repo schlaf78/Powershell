@@ -1,10 +1,22 @@
-{\rtf1\ansi\ansicpg1252\cocoartf2639
-\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica;}
-{\colortbl;\red255\green255\blue255;}
-{\*\expandedcolortbl;;}
-\paperw11900\paperh16840\margl1440\margr1440\vieww21560\viewh10200\viewkind0
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\pardirnatural\partightenfactor0
+Import-Module ActiveDirectory
 
-\f0\fs24 \cf0 $gr = Get-ADGroupMember \'93SOURCE AD GROUP\'94\
-Add-ADGroupMember -Identity "CN=TARGET GROUP,OU=TARGET OU for the group Group,OU=GROUP OU LOCATION IN AD,DC=DOMAIN NAME,DC=DOMAIN,DC=ru" -Members $gr\
+
+# Source and target groups
+$SourceGroup = "Source Group"
+$TargetGroup = "Target Group"
+
+# Get all users/computers from source group, resolving nested groups
+$members = Get-ADGroupMember -Identity $SourceGroup -Recursive |
+           Where-Object { $_.objectClass -in @("user","computer") }
+
+# Add them as direct members into the target group
+foreach ($m in $members) {
+    try {
+        Add-ADGroupMember -Identity $TargetGroup -Members $m -ErrorAction Stop
+        Write-Host "Added $($m.SamAccountName) to $TargetGroup"
+    }
+    catch {
+        Write-Warning "Skipping $($m.SamAccountName): $_"
+    }
 }
+
